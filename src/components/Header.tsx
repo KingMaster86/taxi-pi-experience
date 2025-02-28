@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { User, Menu, X, CarTaxiFront, Clock, CreditCard } from "lucide-react";
+import { User, Menu, X, Clock, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Header = () => {
@@ -27,7 +27,7 @@ const Header = () => {
   }, [location.pathname]);
 
   const navLinks = [
-    { name: "Book Ride", path: "/book", icon: <CarTaxiFront size={18} /> },
+    { name: "Book Ride", path: "/book", icon: <img src="/lovable-uploads/cbde40b6-c338-40be-91a4-f2d767817049.png" alt="Taxi" className="w-5 h-4 object-contain" /> },
     { name: "Ride History", path: "/history", icon: <Clock size={18} /> },
     { name: "Payment", path: "/payment", icon: <CreditCard size={18} /> },
     { name: "Profile", path: "/profile", icon: <User size={18} /> },
@@ -43,7 +43,13 @@ const Header = () => {
       <div className="container max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 text-taxi-purple">
-          <CarTaxiFront className="w-7 h-7" />
+          <div className="w-10 h-10 relative">
+            <img 
+              src="/lovable-uploads/cbde40b6-c338-40be-91a4-f2d767817049.png" 
+              alt="TAXI PI Logo" 
+              className="w-full h-full object-contain"
+            />
+          </div>
           <span className="font-bold text-xl tracking-tight">TAXI PI</span>
         </Link>
         

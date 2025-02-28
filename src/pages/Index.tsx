@@ -1,7 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CarTaxiFront, Package, LogIn, UserPlus } from "lucide-react";
+import { Package, LogIn, UserPlus } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -14,7 +14,7 @@ const Index = () => {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="py-16 md:py-24 px-4 bg-gradient-to-br from-taxi-purple/5 to-taxi-purple/20">
+        <section className="py-16 md:py-24 px-4 bg-gradient-to-br from-[#9b87f5]/5 to-[#9b87f5]/20">
           <div className="container max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="space-y-6">
@@ -47,10 +47,14 @@ const Index = () => {
               </div>
               <div className="flex justify-center">
                 <div className="relative">
-                  <div className="w-64 h-64 md:w-80 md:h-80 bg-taxi-purple/30 rounded-full flex items-center justify-center">
-                    <div className="w-48 h-48 md:w-64 md:h-64 bg-taxi-purple/50 rounded-full flex items-center justify-center">
-                      <div className="w-32 h-32 md:w-48 md:h-48 bg-taxi-purple rounded-full flex items-center justify-center text-white">
-                        <CarTaxiFront className="w-16 h-16 md:w-24 md:h-24" />
+                  <div className="w-64 h-64 md:w-80 md:h-80 bg-[#9b87f5]/30 rounded-full flex items-center justify-center">
+                    <div className="w-48 h-48 md:w-64 md:h-64 bg-[#9b87f5]/50 rounded-full flex items-center justify-center">
+                      <div className="w-32 h-32 md:w-48 md:h-48 bg-[#9b87f5] rounded-full flex items-center justify-center text-white">
+                        <img 
+                          src="/lovable-uploads/cbde40b6-c338-40be-91a4-f2d767817049.png" 
+                          alt="TAXI PI Logo" 
+                          className="w-24 h-24 md:w-32 md:h-32 object-contain"
+                        />
                       </div>
                     </div>
                   </div>
@@ -74,7 +78,11 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="bg-secondary rounded-xl p-6 text-center">
                 <div className="w-16 h-16 bg-taxi-purple/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CarTaxiFront className="w-8 h-8 text-taxi-purple" />
+                  <img 
+                    src="/lovable-uploads/cbde40b6-c338-40be-91a4-f2d767817049.png" 
+                    alt="TAXI PI Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Ride Anywhere</h3>
                 <p className="text-muted-foreground">

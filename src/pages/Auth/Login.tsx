@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { CarTaxiFront } from "lucide-react";
 
 const Login = () => {
   const { toast } = useToast();
@@ -46,8 +45,12 @@ const Login = () => {
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-taxi-purple/10 flex items-center justify-center">
-              <CarTaxiFront className="w-6 h-6 text-taxi-purple" />
+            <div className="w-20 h-20 rounded-full bg-taxi-purple/10 flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/cbde40b6-c338-40be-91a4-f2d767817049.png" 
+                alt="TAXI PI Logo" 
+                className="w-12 h-12 object-contain"
+              />
             </div>
           </div>
           <h2 className="text-2xl font-bold">Welcome Back</h2>
