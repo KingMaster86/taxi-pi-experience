@@ -63,6 +63,14 @@ const Deposit = () => {
     navigate("/driver/dashboard");
   };
 
+  const navigateToPaymentDetails = () => {
+    // Find the payment-details tab trigger and click it
+    const paymentDetailsTab = document.querySelector('[data-value="payment-details"]');
+    if (paymentDetailsTab && paymentDetailsTab instanceof HTMLElement) {
+      paymentDetailsTab.click();
+    }
+  };
+
   const cryptoAddresses = {
     PI: "GDTHELMFZMBJRMWGZ27LVQINCYZVAUCOH7RMYYO5MRUEC4QZW2AFTYYV",
     BTC: "bc1q5a9tavaxvr38mw8lmlmp026kwm246sf7927dt8",
@@ -272,13 +280,7 @@ const Deposit = () => {
 
                 <Button
                   className="w-full bg-taxi-purple hover:bg-taxi-purple-dark button-animation mt-6"
-                  onClick={() => {
-                    document
-                      .querySelector(
-                        '[data-value="payment-details"]'
-                      )
-                      ?.click();
-                  }}
+                  onClick={navigateToPaymentDetails}
                 >
                   Continue
                 </Button>
