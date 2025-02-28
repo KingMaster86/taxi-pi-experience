@@ -13,6 +13,17 @@ import PaymentCrypto from "./pages/PaymentCrypto";
 import PaymentPiNetwork from "./pages/PaymentPiNetwork";
 import RideHistory from "./pages/RideHistory";
 import Profile from "./pages/Profile";
+import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register"; 
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import RoleSelection from "./pages/RoleSelection";
+import DriverDashboard from "./pages/Driver/Dashboard";
+import DriverDeposit from "./pages/Driver/Deposit";
+import DriverChat from "./pages/Driver/Chat";
+import RatePassenger from "./pages/Driver/RatePassenger";
+import PassengerDashboard from "./pages/Passenger/Dashboard";
+import PassengerChat from "./pages/Passenger/Chat";
+import AdminDashboard from "./pages/Admin/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +35,17 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/register" element={<Register />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/role-selection" element={<RoleSelection />} />
+          <Route path="/driver/dashboard" element={<DriverDashboard />} />
+          <Route path="/driver/deposit" element={<DriverDeposit />} />
+          <Route path="/driver/rate-passenger/:tripId" element={<RatePassenger />} />
+          <Route path="/driver/chat/:passengerId" element={<DriverChat />} />
+          <Route path="/passenger/dashboard" element={<PassengerDashboard />} />
+          <Route path="/passenger/chat/:driverId" element={<PassengerChat />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/book" element={<RideBooking />} />
           <Route path="/payment" element={<PaymentSelection />} />
           <Route path="/payment/midtrans" element={<PaymentMidtrans />} />
