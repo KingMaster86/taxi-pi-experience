@@ -112,10 +112,10 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: theme('colors.taxi.purple.light');
+  background: theme('colors.taxi-purple.200');
   border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: theme('colors.taxi.purple.DEFAULT');
+  background: theme('colors.taxi-purple.DEFAULT');
 }

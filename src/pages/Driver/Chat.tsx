@@ -22,7 +22,7 @@ const DriverChat = () => {
   const initialMessages = [
     {
       id: "1",
-      sender: "other",
+      sender: "other" as const,
       content: "Hi driver, I'm waiting at the pickup location",
       timestamp: new Date(Date.now() - 15 * 60000), // 15 minutes ago
       status: "read" as const,
@@ -30,7 +30,7 @@ const DriverChat = () => {
     },
     {
       id: "2",
-      sender: "user",
+      sender: "user" as const,
       content: "I'll be there in about 5 minutes",
       timestamp: new Date(Date.now() - 14 * 60000), // 14 minutes ago
       status: "read" as const,
@@ -38,7 +38,7 @@ const DriverChat = () => {
     },
     {
       id: "3",
-      sender: "other",
+      sender: "other" as const,
       content: "Great, I'm wearing a blue shirt and standing near the entrance",
       timestamp: new Date(Date.now() - 10 * 60000), // 10 minutes ago
       status: "read" as const,
