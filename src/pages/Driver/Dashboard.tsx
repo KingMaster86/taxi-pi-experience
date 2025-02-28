@@ -115,6 +115,18 @@ const DriverDashboard = () => {
     );
     setActiveTripId(null);
     
+    // Deduct platform fee from balance
+    const currentBalance = parseInt(balance.replace(/\D/g, ''));
+    const platformFee = 1000; // 1,000 rupiah fee
+    const newBalance = currentBalance - platformFee;
+    setBalance(`Rp ${newBalance.toLocaleString()}`);
+    
+    // Show toast notification about the fee deduction
+    toast({
+      title: "Platform Fee Deducted",
+      description: "Rp 1,000 has been deducted as platform fee",
+    });
+    
     // Navigate to rating screen
     navigate(`/driver/rate-passenger/${tripId}`);
   };
