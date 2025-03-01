@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, CreditCard, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,23 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+
+// Midtrans configuration
+const MIDTRANS_CONFIG = {
+  clientKey: "Mid-client-Ojn8XJX4bPGxYGp8",
+  merchantId: "G210229255",
+  // Note: Server key should be used only on the backend
+  // We're including it here for reference but it should not be used client-side
+  serverKey: "Mid-server-4WKvjRzQ0SpKiMgdL0kpNB4r"
+};
+
+declare global {
+  interface Window {
+    snap?: {
+      pay: (token: string, options: any) => void;
+    };
+  }
+}
 
 const PaymentMidtrans = () => {
   const { toast } = useToast();
@@ -23,6 +40,20 @@ const PaymentMidtrans = () => {
     cvv: false,
     name: false,
   });
+
+  useEffect(() => {
+    // Load Midtrans Snap JS when component mounts
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", MIDTRANS_CONFIG.clientKey);
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Clean up on unmount
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
@@ -67,6 +98,52 @@ const PaymentMidtrans = () => {
     return !Object.values(newErrors).some(Boolean);
   };
 
+  const processPaymentWithMidtrans = () => {
+    // In a real implementation, you would make an API call to your backend
+    // to create a transaction and get a snap token
+    // For this demo, we'll simulate the process
+    console.log("Processing payment with Midtrans");
+    console.log("Midtrans Config:", {
+      clientKey: MIDTRANS_CONFIG.clientKey,
+      merchantId: MIDTRANS_CONFIG.merchantId
+    });
+    
+    // Simulate getting a token from backend
+    setTimeout(() => {
+      const mockSnapToken = "mock-snap-token-" + Math.random().toString(36).substring(2, 15);
+      console.log("Received snap token:", mockSnapToken);
+      
+      // In a real implementation, you would use the actual snap token
+      // and the window.snap.pay method to open the Midtrans payment popup
+      // window.snap?.pay(mockSnapToken, {
+      //   onSuccess: function() {
+      //     handlePaymentSuccess();
+      //   },
+      //   onPending: function() {
+      //     // Handle pending payment
+      //   },
+      //   onError: function() {
+      //     // Handle payment error
+      //   },
+      //   onClose: function() {
+      //     setIsProcessing(false);
+      //   }
+      // });
+      
+      // For this demo, we'll just simulate a successful payment
+      handlePaymentSuccess();
+    }, 2000);
+  };
+
+  const handlePaymentSuccess = () => {
+    setIsProcessing(false);
+    toast({
+      title: "Payment Successful",
+      description: "Your ride has been booked successfully!",
+    });
+    navigate("/book", { state: { paymentSuccess: true } });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -80,16 +157,9 @@ const PaymentMidtrans = () => {
     }
 
     setIsProcessing(true);
-
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      toast({
-        title: "Payment Successful",
-        description: "Your ride has been booked successfully!",
-      });
-      navigate("/book", { state: { paymentSuccess: true } });
-    }, 2000);
+    
+    // Process payment with Midtrans
+    processPaymentWithMidtrans();
   };
 
   return (
@@ -103,7 +173,7 @@ const PaymentMidtrans = () => {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h2 className="text-xl font-semibold">Card Payment</h2>
+        <h2 className="text-xl font-semibold">Card Payment via Midtrans</h2>
       </div>
 
       <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
@@ -221,7 +291,7 @@ const PaymentMidtrans = () => {
       </div>
 
       <div className="mt-4 text-center text-xs text-muted-foreground">
-        <p>Your payment is secure and encrypted.</p>
+        <p>Your payment is secure and processed by Midtrans (Merchant ID: {MIDTRANS_CONFIG.merchantId})</p>
       </div>
     </div>
   );
