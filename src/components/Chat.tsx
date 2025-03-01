@@ -1,288 +1,333 @@
 
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowLeft, Send, Clock, Check, CheckCheck, Image, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Paperclip, Image, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { formatDistanceToNow } from "date-fns";
+import LocationSharingMap from "@/components/LocationSharingMap";
 
-interface ChatMessage {
+interface UserData {
+  id: string;
+  name: string;
+  avatar: string;
+  status: "online" | "offline" | "away";
+}
+
+interface MessageStatus {
+  status: "sent" | "delivered" | "read";
+}
+
+interface MessageType {
   id: string;
   sender: "user" | "other";
   content: string;
   timestamp: Date;
-  status: "sent" | "delivered" | "read";
+  status: MessageStatus["status"];
   type: "text" | "image" | "location";
-  imageUrl?: string;
   location?: {
-    name: string;
-    coords: {
-      lat: number;
-      lng: number;
-    };
+    latitude: number;
+    longitude: number;
   };
 }
 
 interface ChatProps {
-  otherUser: {
-    id: string;
-    name: string;
-    avatar?: string;
-    status?: "online" | "offline";
-    lastSeen?: string;
-    typing?: boolean;
-  };
-  initialMessages?: ChatMessage[];
+  otherUser: UserData;
+  initialMessages: MessageType[];
   onBack: () => void;
-  userType: "passenger" | "driver";
+  userType: "driver" | "passenger";
 }
 
-const Chat = ({
-  otherUser,
-  initialMessages = [],
-  onBack,
-  userType,
-}: ChatProps) => {
-  const navigate = useNavigate();
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [newMessage, setNewMessage] = useState("");
-  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
+const Chat: React.FC<ChatProps> = ({ otherUser, initialMessages, onBack, userType }) => {
+  const [messages, setMessages] = useState<MessageType[]>(initialMessages);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Scroll to bottom when messages change
+  // Autofocus on the input field when component mounts
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  // Scroll to bottom whenever messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
-  // Send a new message
-  const handleSendMessage = () => {
-    if (newMessage.trim() === "") return;
+  // Simulate typing response
+  useEffect(() => {
+    // Only respond to user messages, not to other's messages or system messages
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.sender === "user") {
+      // Start typing after a short delay
+      const typingTimeout = setTimeout(() => {
+        setIsTyping(true);
+      }, 1000);
 
-    const newMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sender: "user",
-      content: newMessage,
+      // Send a response after a delay
+      const responseTimeout = setTimeout(() => {
+        setIsTyping(false);
+        
+        // Generate an appropriate response based on message content
+        let responseContent = "I'll be there soon!";
+        let messageType: MessageType["type"] = "text";
+        let location = undefined;
+        
+        if (lastMessage.content.toLowerCase().includes("where are you")) {
+          responseContent = "I'm on my way. You can see my location on the map.";
+          messageType = "location";
+          location = {
+            latitude: 40.7128,
+            longitude: -74.0060
+          };
+        } else if (lastMessage.content.toLowerCase().includes("wait")) {
+          responseContent = "No problem, take your time.";
+        } else if (lastMessage.content.toLowerCase().includes("here")) {
+          responseContent = "Great! I'll be looking for you.";
+        }
+        
+        const newMessage: MessageType = {
+          id: `msg-${Date.now()}`,
+          sender: "other" as const,
+          content: responseContent,
+          timestamp: new Date(),
+          status: "sent" as const,
+          type: messageType,
+          ...(location && { location })
+        };
+        
+        setMessages(prev => [...prev, newMessage]);
+      }, 3000);
+
+      return () => {
+        clearTimeout(typingTimeout);
+        clearTimeout(responseTimeout);
+      };
+    }
+  }, [messages]);
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim() === "") return;
+
+    const newMessage: MessageType = {
+      id: `msg-${Date.now()}`,
+      sender: "user" as const,
+      content: inputMessage,
       timestamp: new Date(),
-      status: "sent",
-      type: "text",
+      status: "sent" as const,
+      type: "text" as const
     };
 
-    setMessages([...messages, newMsg]);
-    setNewMessage("");
+    setMessages(prev => [...prev, newMessage]);
+    setInputMessage("");
+  };
 
-    // Simulate reply after a delay (for demo purposes)
-    if (messages.length < 10) {
-      setTimeout(() => {
-        const replyMsg: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          sender: "other",
-          content: getRandomReply(),
-          timestamp: new Date(),
-          status: "read",
-          type: "text",
-        };
-        setMessages((prevMessages) => [...prevMessages, replyMsg]);
-      }, 2000);
+  const handleShareLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newMessage: MessageType = {
+            id: `msg-${Date.now()}`,
+            sender: "user" as const,
+            content: "Here's my current location",
+            timestamp: new Date(),
+            status: "sent" as const,
+            type: "location" as const,
+            location: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }
+          };
+          
+          setMessages(prev => [...prev, newMessage]);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
     }
   };
 
-  // Get a random reply (for demo purposes)
-  const getRandomReply = (): string => {
-    const replies = [
-      "I'm on my way!",
-      "I'll be there in a few minutes.",
-      "Can you provide more details about your location?",
-      "Got it, thanks for the information.",
-      "I'm nearby, will reach you shortly.",
-      "Is there a preferred pickup spot?",
-      "The traffic is a bit heavy, might be delayed by 5 minutes.",
-      "Your ride is confirmed!",
-    ];
-    return replies[Math.floor(Math.random() * replies.length)];
-  };
-
-  // Format timestamp
-  const formatTimestamp = (date: Date): string => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    
-    const days = Math.floor(hours / 24);
-    if (days === 1) return "Yesterday";
-    
-    return date.toLocaleDateString();
-  };
-
-  // Handle keyboard Enter key
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  // Toggle attachment menu
-  const toggleAttachmentMenu = () => {
-    setIsAttachmentMenuOpen(!isAttachmentMenuOpen);
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className="flex flex-col h-full max-h-screen bg-white">
+    <div className="flex flex-col h-full">
       {/* Chat header */}
-      <div className="flex items-center p-4 border-b">
+      <div className="px-4 py-3 border-b flex items-center gap-3 bg-background">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="mr-2"
+          className="rounded-full" 
           onClick={onBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <Avatar className="h-10 w-10">
+        
+        <Avatar className="h-9 w-9">
           <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
-          <AvatarFallback className="bg-taxi-purple text-white">
-            {otherUser.name.split(' ').map(n => n[0]).join('')}
-          </AvatarFallback>
+          <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className="ml-3 flex-1">
-          <h3 className="font-medium">{otherUser.name}</h3>
-          <p className="text-xs text-muted-foreground">
-            {otherUser.typing 
-              ? "Typing..." 
-              : otherUser.status === "online"
-                ? "Online"
-                : otherUser.lastSeen
-                  ? `Last seen ${otherUser.lastSeen}`
-                  : "Offline"}
-          </p>
+        
+        <div className="flex-1">
+          <h2 className="font-semibold">{otherUser.name}</h2>
+          <div className="flex items-center gap-1.5">
+            <div className={`h-2 w-2 rounded-full ${
+              otherUser.status === "online" 
+                ? "bg-green-500" 
+                : otherUser.status === "away" 
+                ? "bg-amber-500" 
+                : "bg-gray-300"
+            }`} />
+            <span className="text-xs text-muted-foreground capitalize">{otherUser.status}</span>
+          </div>
         </div>
       </div>
-      
-      {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-secondary/50">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-4">
-            <div className="w-16 h-16 bg-taxi-purple/10 rounded-full flex items-center justify-center mb-4">
-              <Send className="h-6 w-6 text-taxi-purple" />
-            </div>
-            <h3 className="font-medium mb-1">No messages yet</h3>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              {userType === "driver" 
-                ? "Start the conversation with your passenger about the ride"
-                : "Start the conversation with your driver about the ride"}
-            </p>
-          </div>
-        ) : (
-          messages.map((message, index) => {
-            const isUser = message.sender === "user";
-            const showTimestamp = 
-              index === 0 || 
-              new Date(message.timestamp).getTime() - new Date(messages[index - 1].timestamp).getTime() > 5 * 60 * 1000;
-            
-            return (
-              <div key={message.id} className={`mb-4 ${isUser ? 'ml-auto' : 'mr-auto'}`}>
-                {showTimestamp && (
-                  <div className="text-xs text-center text-muted-foreground my-2">
-                    {formatTimestamp(message.timestamp)}
+
+      {/* Real-time location sharing map */}
+      <div className="p-4 border-b">
+        <h3 className="text-sm font-medium mb-2">Real-time Location Tracking</h3>
+        <LocationSharingMap 
+          userId={userType === "driver" ? "driver-123" : "passenger-123"}
+          targetUserId={userType === "driver" ? "passenger-123" : "driver-123"}
+          isDriver={userType === "driver"}
+        />
+      </div>
+
+      {/* Messages area */}
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div 
+              key={message.id}
+              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div className="max-w-[80%]">
+                {message.sender === "other" && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
+                      <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium">{otherUser.name}</span>
                   </div>
                 )}
-                <div className={`max-w-[80%] ${isUser ? 'ml-auto' : 'mr-auto'}`}>
-                  <div 
-                    className={cn(
-                      "rounded-2xl p-3",
-                      isUser 
-                        ? "bg-taxi-purple text-white rounded-br-none" 
-                        : "bg-white shadow-sm border rounded-bl-none"
-                    )}
-                  >
-                    {message.type === "text" && (
-                      <p className="text-sm">{message.content}</p>
-                    )}
-                    {message.type === "image" && message.imageUrl && (
-                      <div className="mb-1">
-                        <img 
-                          src={message.imageUrl} 
-                          alt="Shared" 
-                          className="max-w-full rounded-lg" 
-                        />
+                
+                <div 
+                  className={`rounded-lg px-3 py-2 text-sm ${
+                    message.sender === "user" 
+                      ? "bg-taxi-purple text-white rounded-br-none" 
+                      : "bg-secondary text-foreground rounded-bl-none"
+                  }`}
+                >
+                  {message.content}
+                  
+                  {message.type === "location" && (
+                    <div className="mt-2 bg-background/20 p-2 rounded text-xs">
+                      <div className="flex items-center gap-1 mb-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>Location shared</span>
                       </div>
-                    )}
-                    {message.type === "location" && message.location && (
-                      <div className="rounded-lg border bg-secondary/50 p-2 flex items-center space-x-2">
-                        <MapPin className="h-5 w-5 text-taxi-purple" />
-                        <div>
-                          <p className="text-sm font-medium">{message.location.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            ({message.location.coords.lat.toFixed(6)}, {message.location.coords.lng.toFixed(6)})
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  {isUser && (
-                    <div className="text-xs text-right mt-1 text-muted-foreground">
-                      {message.status === "read" ? "Read" : message.status === "delivered" ? "Delivered" : "Sent"}
+                      {message.location && (
+                        <p className="font-mono">
+                          {message.location.latitude.toFixed(6)}, {message.location.longitude.toFixed(6)}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
+                
+                <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground justify-end">
+                  <span>{formatTime(message.timestamp)}</span>
+                  
+                  {message.sender === "user" && (
+                    <span>
+                      {message.status === "sent" && <Check className="h-3 w-3" />}
+                      {message.status === "delivered" && <Check className="h-3 w-3" />}
+                      {message.status === "read" && <CheckCheck className="h-3 w-3 text-taxi-purple" />}
+                    </span>
+                  )}
+                </div>
               </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Attachment menu (conditionally rendered) */}
-      {isAttachmentMenuOpen && (
-        <div className="p-2 border-t grid grid-cols-2 gap-2 bg-secondary/20 animate-slide-in-up">
-          <Button 
-            variant="outline"
-            className="flex flex-col items-center justify-center h-20 space-y-1"
-          >
-            <Image className="h-6 w-6 text-taxi-purple" />
-            <span className="text-xs">Send Photo</span>
-          </Button>
-          <Button 
-            variant="outline"
-            className="flex flex-col items-center justify-center h-20 space-y-1"
-          >
-            <MapPin className="h-6 w-6 text-taxi-purple" />
-            <span className="text-xs">Share Location</span>
-          </Button>
+            </div>
+          ))}
+          
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%]">
+                <div className="flex items-center gap-2 mb-1">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
+                    <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-medium">{otherUser.name}</span>
+                </div>
+                
+                <div className="rounded-lg px-3 py-2 text-sm bg-secondary text-foreground rounded-bl-none">
+                  <div className="flex items-center gap-1">
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-bounce"></div>
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
         </div>
-      )}
+      </ScrollArea>
       
-      {/* Message input */}
-      <div className="p-4 border-t flex items-end space-x-2">
+      <Separator />
+      
+      {/* Input area */}
+      <div className="p-4 bg-background flex items-center gap-2">
         <Button 
-          variant="ghost" 
-          size="icon"
-          className="text-muted-foreground"
-          onClick={toggleAttachmentMenu}
-        >
-          <Paperclip className="h-5 w-5" />
-        </Button>
-        <div className="flex-1">
-          <Input
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="min-h-10 py-2"
-          />
-        </div>
-        <Button 
+          variant="outline" 
           size="icon" 
-          className="bg-taxi-purple text-white hover:bg-taxi-purple-dark"
+          className="rounded-full shrink-0"
+          onClick={handleShareLocation}
+        >
+          <MapPin className="h-5 w-5 text-taxi-purple" />
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="rounded-full shrink-0"
+        >
+          <Image className="h-5 w-5 text-taxi-purple" />
+        </Button>
+        
+        <Input
+          ref={inputRef}
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
+          placeholder="Type a message..."
+          className="flex-1"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSendMessage();
+            }
+          }}
+        />
+        
+        <Button 
+          variant="default" 
+          size="icon" 
+          className="rounded-full shrink-0 bg-taxi-purple hover:bg-taxi-purple-dark"
           onClick={handleSendMessage}
-          disabled={newMessage.trim() === ""}
+          disabled={inputMessage.trim() === ""}
         >
           <Send className="h-5 w-5" />
         </Button>

@@ -6,6 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+// Pi Network configuration
+const PI_NETWORK_CONFIG = {
+  apiKey: "pi_network_api_key_123456789",
+  sandboxMode: true,
+  version: "2.0"
+};
+
 const PaymentPiNetwork = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -18,6 +25,8 @@ const PaymentPiNetwork = () => {
 
   const handleInitiatePayment = () => {
     setPaymentState('scanning');
+    
+    console.log("Initiating Pi Network payment with config:", PI_NETWORK_CONFIG);
     
     // Simulate user scanning QR code
     setTimeout(() => {
