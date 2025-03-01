@@ -6,9 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-// Pi Network configuration
+// Pi Network configuration with the provided API key
 const PI_NETWORK_CONFIG = {
-  apiKey: "pi_network_api_key_123456789",
+  apiKey: "votocj7mgzciz1obvejvabvxuqlkmfckliw8wshf7ccng5voqfaz82l2wvns3xr8",
   sandboxMode: true,
   version: "2.0"
 };

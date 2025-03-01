@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,12 @@ import { ArrowLeft, Check, CreditCard, Wallet, Coins } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+
+const PI_NETWORK_CONFIG = {
+  apiKey: "votocj7mgzciz1obvejvabvxuqlkmfckliw8wshf7ccng5voqfaz82l2wvns3xr8",
+  sandboxMode: true,
+  version: "2.0"
+};
 
 const Deposit = () => {
   const { toast } = useToast();
@@ -511,7 +516,7 @@ const Deposit = () => {
                       </div>
                       <div className="mt-2">
                         <p className="text-xs text-muted-foreground">
-                          API Key: votocj7mgzciz1obvejvabvxuqlkmfckliw8wshf7ccng5voqfaz82l2wvns3xr8
+                          API Key: {PI_NETWORK_CONFIG.apiKey}
                         </p>
                       </div>
                     </div>

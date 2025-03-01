@@ -38,18 +38,26 @@ const RatePassenger = () => {
     setTimeout(() => {
       setIsSubmitting(false);
 
-      // Simulate platform fee deduction
+      // Show platform fee deduction notification (Rp 1,000)
       toast({
-        title: "Platform Fee",
-        description: "Rp 1,000 has been deducted as platform fee",
+        title: "Platform Fee Deducted",
+        description: "Rp 1,000 has been deducted from your balance as platform fee",
       });
 
       setTimeout(() => {
+        // Show cash payment notification - passenger paid cash to driver
         toast({
-          title: "Rating Submitted",
-          description: "Thank you for your feedback!",
+          title: "Cash Payment Received",
+          description: "The passenger has paid in cash for this trip",
         });
-        navigate("/driver/dashboard");
+
+        setTimeout(() => {
+          toast({
+            title: "Rating Submitted",
+            description: "Thank you for your feedback!",
+          });
+          navigate("/driver/dashboard");
+        }, 1000);
       }, 1000);
     }, 1500);
   };
@@ -145,7 +153,7 @@ const RatePassenger = () => {
         <div className="text-center text-xs text-muted-foreground">
           <p>
             Note: A platform fee of Rp 1,000 will be deducted from your balance
-            for this completed trip.
+            for this completed trip. The passenger has paid in cash.
           </p>
         </div>
       </div>
