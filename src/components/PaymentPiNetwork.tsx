@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { ArrowLeft, QrCode, Loader2, Check, AlertCircle } from "lucide-react";
+import { ArrowLeft, QrCode, Loader2, Check, AlertCircle, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/utils/supabase";
 
 // Pi Network configuration with the provided API key
 const PI_NETWORK_CONFIG = {
@@ -13,20 +14,54 @@ const PI_NETWORK_CONFIG = {
   version: "2.0"
 };
 
+// Pi Network wallet address
+const PI_WALLET_ADDRESS = "GDTHELMFZMBJRMWGZ27LVQINCYZVAUCOH7RMYYO5MRUEC4QZW2AFTYYV";
+
 const PaymentPiNetwork = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const [paymentState, setPaymentState] = useState<'init' | 'scanning' | 'verifying' | 'success' | 'error'>('init');
+  const [transactionId, setTransactionId] = useState<string>("");
 
   const handleGoBack = () => {
     navigate("/payment");
+  };
+
+  const handleCopyAddress = () => {
+    navigator.clipboard.writeText(PI_WALLET_ADDRESS);
+    toast({
+      title: "Address Copied",
+      description: "Pi wallet address has been copied to clipboard",
+    });
+  };
+
+  const notifyAdmin = async (paymentInfo: any) => {
+    try {
+      // Send notification to admin panel through Supabase
+      const { error } = await supabase
+        .from('payment_notifications')
+        .insert([{
+          payment_type: 'Pi Network',
+          amount: 50, // Pi amount
+          status: 'pending',
+          transaction_id: paymentInfo.transactionId,
+          timestamp: new Date().toISOString(),
+        }]);
+
+      if (error) {
+        console.error("Error sending notification to admin:", error);
+      }
+    } catch (err) {
+      console.error("Failed to notify admin:", err);
+    }
   };
 
   const handleInitiatePayment = () => {
     setPaymentState('scanning');
     
     console.log("Initiating Pi Network payment with config:", PI_NETWORK_CONFIG);
+    console.log("Using wallet address:", PI_WALLET_ADDRESS);
     
     // Simulate user scanning QR code
     setTimeout(() => {
@@ -37,7 +72,18 @@ const PaymentPiNetwork = () => {
         const success = Math.random() > 0.3; // 70% success rate for demo
         
         if (success) {
+          // Generate a realistic transaction ID
+          const txId = `pi-tx-${Math.random().toString(36).substring(2, 10)}`;
+          setTransactionId(txId);
           setPaymentState('success');
+          
+          // Notify admin about the successful payment
+          notifyAdmin({
+            transactionId: txId,
+            amount: 50,
+            status: 'success'
+          });
+          
           toast({
             title: "Payment Successful",
             description: "Your Pi Network payment has been processed!",
@@ -75,6 +121,23 @@ const PaymentPiNetwork = () => {
               <h3 className="font-semibold text-lg">Pi Network Payment</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Pay with your Pi wallet for a seamless experience
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-secondary">
+              <p className="text-sm mb-2">Pi Wallet Address:</p>
+              <div className="flex items-center justify-between p-2 bg-background rounded border">
+                <span className="text-xs font-mono truncate">{PI_WALLET_ADDRESS}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="ml-2" 
+                  onClick={handleCopyAddress}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                API Key: {PI_NETWORK_CONFIG.apiKey.substring(0, 12)}...
               </p>
             </div>
             <div className="p-3 rounded-lg bg-secondary flex items-center justify-between">
@@ -143,7 +206,7 @@ const PaymentPiNetwork = () => {
             </div>
             <div className="p-3 rounded-lg bg-green-50 border border-green-100">
               <p className="text-sm text-green-800">
-                Transaction ID: <span className="font-mono">pi-tx-28d9e71f</span>
+                Transaction ID: <span className="font-mono">{transactionId}</span>
               </p>
             </div>
           </div>
