@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/utils/supabase";
+import { createPaymentNotification } from "@/utils/supabase";
 
 // Pi Network configuration with the provided API key
 const PI_NETWORK_CONFIG = {
@@ -23,6 +23,7 @@ const PaymentPiNetwork = () => {
   
   const [paymentState, setPaymentState] = useState<'init' | 'scanning' | 'verifying' | 'success' | 'error'>('init');
   const [transactionId, setTransactionId] = useState<string>("");
+  const [amount, setAmount] = useState<number>(50); // Default amount in Pi
 
   const handleGoBack = () => {
     navigate("/payment");
@@ -38,19 +39,26 @@ const PaymentPiNetwork = () => {
 
   const notifyAdmin = async (paymentInfo: any) => {
     try {
-      // Send notification to admin panel through Supabase
-      const { error } = await supabase
-        .from('payment_notifications')
-        .insert([{
-          payment_type: 'Pi Network',
-          amount: 50, // Pi amount
-          status: 'pending',
-          transaction_id: paymentInfo.transactionId,
+      const { error } = await createPaymentNotification({
+        payment_type: 'Pi Network',
+        amount: amount, // Pi amount
+        status: 'pending',
+        transaction_id: paymentInfo.transactionId,
+        details: {
+          wallet_address: PI_WALLET_ADDRESS,
           timestamp: new Date().toISOString(),
-        }]);
+        }
+      });
 
       if (error) {
         console.error("Error sending notification to admin:", error);
+        toast({
+          title: "Notification Error",
+          description: "Could not notify admin about your payment. Please contact support.",
+          variant: "destructive",
+        });
+      } else {
+        console.log("Payment notification sent to admin");
       }
     } catch (err) {
       console.error("Failed to notify admin:", err);
@@ -73,14 +81,14 @@ const PaymentPiNetwork = () => {
         
         if (success) {
           // Generate a realistic transaction ID
-          const txId = `pi-tx-${Math.random().toString(36).substring(2, 10)}`;
+          const txId = `pi-tx-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
           setTransactionId(txId);
           setPaymentState('success');
           
           // Notify admin about the successful payment
           notifyAdmin({
             transactionId: txId,
-            amount: 50,
+            amount: amount,
             status: 'success'
           });
           
@@ -142,7 +150,7 @@ const PaymentPiNetwork = () => {
             </div>
             <div className="p-3 rounded-lg bg-secondary flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className="font-mono font-semibold">50 π</span>
+                <span className="font-mono font-semibold">{amount} π</span>
                 <span className="text-xs text-muted-foreground">(~$45.00)</span>
               </div>
             </div>
