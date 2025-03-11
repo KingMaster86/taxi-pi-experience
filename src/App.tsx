@@ -24,6 +24,7 @@ import RatePassenger from "./pages/Driver/RatePassenger";
 import PassengerDashboard from "./pages/Passenger/Dashboard";
 import PassengerChat from "./pages/Passenger/Chat";
 import AdminDashboard from "./pages/Admin/Dashboard";
+import TodoList from "./pages/TodoList";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
           <Route path="/payment/pi" element={<PaymentPiNetwork />} />
           <Route path="/history" element={<RideHistory />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/todos" element={<TodoList />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
